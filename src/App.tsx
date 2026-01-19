@@ -3,7 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import SalesDashboard from "./pages/SalesDashboard";
+import BookingFlow from "./pages/BookingFlow";
+import SignatureCapture from "./pages/SignatureCapture";
+import Deliveries from "./pages/Deliveries";
+import ClientPortal from "./pages/ClientPortal";
+import AdminPricing from "./pages/AdminPricing";
+import ReportsDashboard from "./pages/ReportsDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +21,24 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Sales Routes */}
+          <Route path="/" element={<SalesDashboard />} />
+          <Route path="/booking" element={<BookingFlow />} />
+          <Route path="/deliveries" element={<Deliveries />} />
+          <Route path="/signatures" element={<SignatureCapture />} />
+          <Route path="/reports" element={<ReportsDashboard />} />
+          
+          {/* Client Portal */}
+          <Route path="/client" element={<ClientPortal />} />
+          <Route path="/client/bookings" element={<ClientPortal />} />
+          <Route path="/client/documents" element={<ClientPortal />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminPricing />} />
+          <Route path="/admin/pricing" element={<AdminPricing />} />
+          <Route path="/admin/analytics" element={<ReportsDashboard />} />
+          
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
