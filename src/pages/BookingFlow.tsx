@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   MapPin, 
@@ -13,15 +12,51 @@ import {
   Star,
   Users,
   Zap,
-  Building2
+  Building2,
+  Navigation
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const steps = [
   { id: 1, label: 'Locations' },
   { id: 2, label: 'Select Route' },
   { id: 3, label: 'Competitors' },
   { id: 4, label: 'Confirm' },
+];
+
+// Mock customer data
+const customers = [
+  { id: '1', name: 'Acme Industries', code: 'ACME', discount: 15 },
+  { id: '2', name: 'Global Manufacturing Ltd', code: 'GML', discount: 10 },
+  { id: '3', name: 'Northern Steel Works', code: 'NSW', discount: 12 },
+  { id: '4', name: 'Precision Engineering Co', code: 'PEC', discount: 8 },
+  { id: '5', name: 'Swift Components Ltd', code: 'SCL', discount: 20 },
+  { id: '6', name: 'United Packaging Solutions', code: 'UPS', discount: 5 },
+];
+
+// Mock locations with coordinates for map visualization
+const locations = [
+  { id: '1', name: 'Manchester Depot', address: 'Unit 5, Industrial Park, Manchester M1 2AB', lat: 53.483959, lng: -2.244644 },
+  { id: '2', name: 'Birmingham Hub', address: '120 Logistics Way, Birmingham B1 1AA', lat: 52.486243, lng: -1.890401 },
+  { id: '3', name: 'London Distribution Centre', address: '45 Freight Road, London E15 4QZ', lat: 51.538330, lng: -0.016389 },
+  { id: '4', name: 'Leeds Warehouse', address: 'Bay 12, Commerce Park, Leeds LS1 5PL', lat: 53.800755, lng: -1.549077 },
+  { id: '5', name: 'Glasgow Terminal', address: '88 Dockside Avenue, Glasgow G1 3DQ', lat: 55.860916, lng: -4.251433 },
+  { id: '6', name: 'Bristol Storage Facility', address: '22 Port View, Bristol BS1 6QH', lat: 51.454513, lng: -2.587910 },
+  { id: '7', name: 'Edinburgh Logistics Park', address: '15 Capital Way, Edinburgh EH1 1BB', lat: 55.953251, lng: -3.188267 },
+  { id: '8', name: 'Liverpool Dock Warehouse', address: '60 Mersey Road, Liverpool L3 4FP', lat: 53.408371, lng: -2.991573 },
 ];
 
 interface RouteOption {
@@ -60,7 +95,7 @@ const routeOptions: RouteOption[] = [
     duration: '2h 30m',
     price: '£1,200',
     distance: '130 miles',
-    description: 'Pre-negotiated rate for Acme Industries.',
+    description: 'Pre-negotiated rate for preferred clients.',
   },
 ];
 
@@ -72,14 +107,32 @@ const competitorPricing = [
 
 export default function BookingFlow() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [pickup, setPickup] = useState('');
-  const [destination, setDestination] = useState('');
+  const [pickupId, setPickupId] = useState<string | null>(null);
+  const [destinationId, setDestinationId] = useState<string | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [customer, setCustomer] = useState('');
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [pickupOpen, setPickupOpen] = useState(false);
+  const [destinationOpen, setDestinationOpen] = useState(false);
+
+  const selectedCustomer = customers.find(c => c.id === customerId);
+  const pickupLocation = locations.find(l => l.id === pickupId);
+  const destinationLocation = locations.find(l => l.id === destinationId);
+
+  // Filter out selected pickup from destination options and vice versa
+  const availableDestinations = useMemo(() => 
+    locations.filter(l => l.id !== pickupId), 
+    [pickupId]
+  );
+  const availablePickups = useMemo(() => 
+    locations.filter(l => l.id !== destinationId), 
+    [destinationId]
+  );
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return pickup && destination && customer;
+      case 1: return pickupId && destinationId && customerId;
       case 2: return selectedRoute;
       case 3: return true;
       case 4: return true;
@@ -106,6 +159,9 @@ export default function BookingFlow() {
     cheapest: 'Cheapest',
     preferred: 'Client Preferred',
   };
+
+  // Calculate map visualization based on selected locations
+  const hasRoute = pickupLocation && destinationLocation;
 
   return (
     <MainLayout userRole="sales" title="New Booking">
@@ -157,59 +213,271 @@ export default function BookingFlow() {
               <div className="bg-card rounded-xl border border-border p-6 space-y-6">
                 <h2 className="text-xl font-semibold">Enter Booking Details</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="customer">Customer</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input 
-                        id="customer"
-                        placeholder="Search customer..."
-                        className="pl-10"
-                        value={customer}
-                        onChange={(e) => setCustomer(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                {/* Customer Dropdown */}
+                <div className="space-y-2">
+                  <Label>Customer</Label>
+                  <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={customerOpen}
+                        className="w-full justify-start text-left font-normal h-11"
+                      >
+                        <Building2 className="mr-2 h-4 w-4 text-muted-foreground shrink-0" />
+                        {selectedCustomer ? (
+                          <span className="truncate">
+                            {selectedCustomer.name}
+                            <span className="ml-2 text-muted-foreground">({selectedCustomer.code})</span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">Select customer...</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0 bg-popover border border-border shadow-lg z-50" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search customers..." className="h-11" />
+                        <CommandList>
+                          <CommandEmpty>No customer found.</CommandEmpty>
+                          <CommandGroup>
+                            {customers.map((customer) => (
+                              <CommandItem
+                                key={customer.id}
+                                value={customer.name}
+                                onSelect={() => {
+                                  setCustomerId(customer.id);
+                                  setCustomerOpen(false);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    customerId === customer.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex-1">
+                                  <div className="font-medium">{customer.name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Code: {customer.code} • {customer.discount}% discount
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Pickup Location Dropdown */}
                   <div className="space-y-2">
-                    <Label htmlFor="pickup">Pickup Location</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-success" />
-                      <Input 
-                        id="pickup"
-                        placeholder="Enter pickup address..."
-                        className="pl-10"
-                        value={pickup}
-                        onChange={(e) => setPickup(e.target.value)}
-                      />
-                    </div>
+                    <Label>Pickup Location</Label>
+                    <Popover open={pickupOpen} onOpenChange={setPickupOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={pickupOpen}
+                          className="w-full justify-start text-left font-normal h-11"
+                        >
+                          <MapPin className="mr-2 h-4 w-4 text-success shrink-0" />
+                          {pickupLocation ? (
+                            <span className="truncate">{pickupLocation.name}</span>
+                          ) : (
+                            <span className="text-muted-foreground">Select pickup...</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[350px] p-0 bg-popover border border-border shadow-lg z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search locations..." className="h-11" />
+                          <CommandList>
+                            <CommandEmpty>No location found.</CommandEmpty>
+                            <CommandGroup>
+                              {availablePickups.map((location) => (
+                                <CommandItem
+                                  key={location.id}
+                                  value={location.name}
+                                  onSelect={() => {
+                                    setPickupId(location.id);
+                                    setPickupOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      pickupId === location.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="font-medium">{location.name}</div>
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {location.address}
+                                    </div>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
+                  {/* Destination Dropdown */}
                   <div className="space-y-2">
-                    <Label htmlFor="destination">Destination</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
-                      <Input 
-                        id="destination"
-                        placeholder="Enter destination..."
-                        className="pl-10"
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                      />
-                    </div>
+                    <Label>Destination</Label>
+                    <Popover open={destinationOpen} onOpenChange={setDestinationOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={destinationOpen}
+                          className="w-full justify-start text-left font-normal h-11"
+                        >
+                          <MapPin className="mr-2 h-4 w-4 text-destructive shrink-0" />
+                          {destinationLocation ? (
+                            <span className="truncate">{destinationLocation.name}</span>
+                          ) : (
+                            <span className="text-muted-foreground">Select destination...</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[350px] p-0 bg-popover border border-border shadow-lg z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search locations..." className="h-11" />
+                          <CommandList>
+                            <CommandEmpty>No location found.</CommandEmpty>
+                            <CommandGroup>
+                              {availableDestinations.map((location) => (
+                                <CommandItem
+                                  key={location.id}
+                                  value={location.name}
+                                  onSelect={() => {
+                                    setDestinationId(location.id);
+                                    setDestinationOpen(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      destinationId === location.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="font-medium">{location.name}</div>
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {location.address}
+                                    </div>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
-                {/* Map Preview */}
-                <div className="map-container flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">Interactive map will display here</p>
-                    <p className="text-xs text-muted-foreground mt-1">Enter locations to see route options</p>
-                  </div>
+                {/* Interactive Map Preview */}
+                <div className="map-container relative overflow-hidden">
+                  {hasRoute ? (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5">
+                      {/* Stylized Map Visualization */}
+                      <svg viewBox="0 0 400 200" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                        {/* Background grid */}
+                        <defs>
+                          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.3"/>
+                          </pattern>
+                          <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="hsl(var(--success))" />
+                            <stop offset="100%" stopColor="hsl(var(--destructive))" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="400" height="200" fill="url(#grid)" />
+                        
+                        {/* Route line with animation */}
+                        <motion.path
+                          d="M 60 100 Q 150 40 200 100 T 340 100"
+                          fill="none"
+                          stroke="url(#routeGradient)"
+                          strokeWidth="3"
+                          strokeDasharray="8 4"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 1.5, ease: "easeInOut" }}
+                        />
+                        
+                        {/* Pickup marker */}
+                        <motion.g 
+                          initial={{ scale: 0 }} 
+                          animate={{ scale: 1 }} 
+                          transition={{ delay: 0.2 }}
+                        >
+                          <circle cx="60" cy="100" r="20" fill="hsl(var(--success))" opacity="0.2" />
+                          <circle cx="60" cy="100" r="12" fill="hsl(var(--success))" />
+                          <circle cx="60" cy="100" r="5" fill="white" />
+                        </motion.g>
+                        
+                        {/* Destination marker */}
+                        <motion.g 
+                          initial={{ scale: 0 }} 
+                          animate={{ scale: 1 }} 
+                          transition={{ delay: 0.4 }}
+                        >
+                          <circle cx="340" cy="100" r="20" fill="hsl(var(--destructive))" opacity="0.2" />
+                          <circle cx="340" cy="100" r="12" fill="hsl(var(--destructive))" />
+                          <circle cx="340" cy="100" r="5" fill="white" />
+                        </motion.g>
+                        
+                        {/* Navigation icon in center */}
+                        <motion.g
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 }}
+                        >
+                          <circle cx="200" cy="60" r="16" fill="hsl(var(--accent))" />
+                          <path 
+                            d="M 200 50 L 206 66 L 200 62 L 194 66 Z" 
+                            fill="white"
+                            transform="rotate(45, 200, 58)"
+                          />
+                        </motion.g>
+                      </svg>
+                      
+                      {/* Route info overlay */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                        <div className="bg-background/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-border shadow-sm">
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="w-3 h-3 rounded-full bg-success" />
+                            <span className="font-medium">{pickupLocation?.name}</span>
+                          </div>
+                        </div>
+                        <div className="bg-background/95 backdrop-blur-sm rounded-lg px-3 py-2 border border-border shadow-sm">
+                          <div className="flex items-center gap-2 text-sm">
+                            <div className="w-3 h-3 rounded-full bg-destructive" />
+                            <span className="font-medium">{destinationLocation?.name}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                      <Navigation className="w-12 h-12 text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground font-medium">Interactive Route Map</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Select pickup and destination to view the route
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -219,7 +487,7 @@ export default function BookingFlow() {
                 <div className="bg-card rounded-xl border border-border p-6">
                   <h2 className="text-xl font-semibold mb-4">Select Route</h2>
                   <p className="text-muted-foreground mb-6">
-                    {pickup} → {destination}
+                    {pickupLocation?.name} → {destinationLocation?.name}
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -344,15 +612,22 @@ export default function BookingFlow() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Customer</p>
-                      <p className="font-medium">{customer}</p>
+                      <p className="font-medium">{selectedCustomer?.name}</p>
+                      {selectedCustomer && (
+                        <p className="text-xs text-success mt-1">
+                          {selectedCustomer.discount}% client discount applied
+                        </p>
+                      )}
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Pickup</p>
-                      <p className="font-medium">{pickup}</p>
+                      <p className="font-medium">{pickupLocation?.name}</p>
+                      <p className="text-xs text-muted-foreground">{pickupLocation?.address}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Destination</p>
-                      <p className="font-medium">{destination}</p>
+                      <p className="font-medium">{destinationLocation?.name}</p>
+                      <p className="text-xs text-muted-foreground">{destinationLocation?.address}</p>
                     </div>
                   </div>
 
