@@ -24,7 +24,7 @@ export default function Index() {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              TransportPro
+              Swifthaul Logistics
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Fast, automated, and data-driven transport booking for modern logistics teams.

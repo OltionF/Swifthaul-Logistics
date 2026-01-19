@@ -69,7 +69,7 @@ export default function Sidebar({ userRole = 'sales' }: SidebarProps) {
           </div>
           {!collapsed && (
             <div className="animate-fade-in">
-              <h1 className="font-semibold text-sidebar-foreground">TransportPro</h1>
+              <h1 className="font-semibold text-sidebar-foreground">Swifthaul Logistics</h1>
               <p className="text-xs text-sidebar-foreground/60">{roleLabels[userRole]}</p>
             </div>
           )}
