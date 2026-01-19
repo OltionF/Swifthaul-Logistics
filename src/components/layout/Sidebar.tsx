@@ -22,7 +22,6 @@ const salesNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Route, label: 'New Booking', path: '/booking' },
   { icon: Truck, label: 'Deliveries', path: '/deliveries' },
-  { icon: FileSignature, label: 'Signatures', path: '/signatures' },
   { icon: BarChart3, label: 'Reports', path: '/reports' },
 ];
 
