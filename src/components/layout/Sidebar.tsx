@@ -24,7 +24,7 @@ const salesNavItems = [
   { icon: Truck, label: 'Deliveries', path: '/deliveries' },
   { icon: Users, label: 'Customers Config', path: '/customers' },
   { icon: Users, label: 'Discount Config', path: '/discount' },
-  { icon: BarChart3, label: 'Reports', path: '/reports' },
+  // { icon: BarChart3, label: 'Reports', path: '/reports' },
 ];
 
 const clientNavItems = [
