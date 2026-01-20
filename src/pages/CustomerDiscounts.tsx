@@ -138,7 +138,6 @@ export default function CustomerDiscounts() {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[250px]">Customer</TableHead>
-              <TableHead>Tier</TableHead>
               <TableHead>Discount</TableHead>
               <TableHead>Conditions</TableHead>
               <TableHead>Valid Until</TableHead>
@@ -159,16 +158,6 @@ export default function CustomerDiscounts() {
                       </div>
                       <span className="font-medium">{discount.customerName}</span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {discount.contractTier && (
-                      <Badge
-                        className={cn('capitalize', tierColors[discount.contractTier])}
-                        variant="secondary"
-                      >
-                        {discount.contractTier}
-                      </Badge>
-                    )}
                   </TableCell>
                   <TableCell>
                     <span className="font-semibold text-success">

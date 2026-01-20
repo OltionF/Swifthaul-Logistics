@@ -59,7 +59,6 @@ export default function Customers() {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="w-[300px]">Customer</TableHead>
-              <TableHead>Contract Tier</TableHead>
               <TableHead>Monthly Volume</TableHead>
               <TableHead>Total Routes</TableHead>
               <TableHead>Active Discounts</TableHead>
@@ -82,14 +81,6 @@ export default function Customers() {
                       </p>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={cn('capitalize', tierColors[customer.contractTier])}
-                    variant="secondary"
-                  >
-                    {customer.contractTier}
-                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
