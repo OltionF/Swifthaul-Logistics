@@ -33,8 +33,7 @@ import {
 const steps = [
   { id: 1, label: 'Locations' },
   { id: 2, label: 'Select Route' },
-  { id: 3, label: 'Competitors' },
-  { id: 4, label: 'Confirm' },
+  { id: 3, label: 'Confirm' },
 ];
 
 // Mock customer data
@@ -135,7 +134,6 @@ export default function BookingFlow() {
       case 1: return pickupId && destinationId && customerId;
       case 2: return selectedRoute;
       case 3: return true;
-      case 4: return true;
       default: return false;
     }
   };
@@ -534,7 +532,7 @@ export default function BookingFlow() {
               </div>
             )}
 
-            {currentStep === 3 && (
+            {currentStep === 4 && (
               <div className="bg-card rounded-xl border border-border p-6">
                 <h2 className="text-xl font-semibold mb-4">Competitor Pricing</h2>
                 <p className="text-muted-foreground mb-6">
@@ -604,7 +602,7 @@ export default function BookingFlow() {
               </div>
             )}
 
-            {currentStep === 4 && (
+            {currentStep === 3 && (
               <div className="bg-card rounded-xl border border-border p-6">
                 <h2 className="text-xl font-semibold mb-6">Booking Confirmation</h2>
 
@@ -680,7 +678,7 @@ export default function BookingFlow() {
             Back
           </Button>
           
-          {currentStep < 4 ? (
+          {currentStep < 3 ? (
             <Button 
               onClick={nextStep}
               disabled={!canProceed()}
