@@ -126,7 +126,9 @@ export default function Deliveries() {
 
               <div className="flex items-center gap-2 mb-4">
                 <MapPin className="w-4 h-4 text-destructive" />
-                <span className="text-sm">{delivery.destination}</span>
+
+                <span className="text-sm">From: {delivery.destination}</span>
+                <span className="mx-2 text-sm">To: {delivery.destination}</span>
               </div>
 
               {/* Progress Bar */}
@@ -148,10 +150,7 @@ export default function Deliveries() {
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Driver: </span>
-                  <span className="font-medium">{delivery.driver}</span>
-                </div>
+               
                 <div className="flex items-center gap-2">
                   {delivery.status === 'awaiting-signature' && (
                     <Button size="sm" asChild className="gap-1">
@@ -161,13 +160,6 @@ export default function Deliveries() {
                       </Link>
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Navigation className="w-4 h-4" />
-                    Track
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Eye className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
             </div>

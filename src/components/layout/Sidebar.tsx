@@ -22,6 +22,8 @@ const salesNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Route, label: 'New Booking', path: '/booking' },
   { icon: Truck, label: 'Deliveries', path: '/deliveries' },
+  { icon: Users, label: 'Customers Config', path: '/customers' },
+  { icon: Users, label: 'Discount Config', path: '/discount' },
   { icon: BarChart3, label: 'Reports', path: '/reports' },
 ];
 
@@ -33,6 +35,13 @@ const clientNavItems = [
 
 const adminNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+  { icon: Settings, label: 'Pricing Rules', path: '/admin/pricing' },
+  { icon: Users, label: 'Users', path: '/admin/users' },
+  { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
+];
+
+const CustomerDiscounts = [
+  { icon: LayoutDashboard, label: 'Customer Config', path: '/admin' },
   { icon: Settings, label: 'Pricing Rules', path: '/admin/pricing' },
   { icon: Users, label: 'Users', path: '/admin/users' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },

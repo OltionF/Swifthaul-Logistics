@@ -11,6 +11,8 @@ import ClientPortal from "./pages/ClientPortal";
 import AdminPricing from "./pages/AdminPricing";
 import ReportsDashboard from "./pages/ReportsDashboard";
 import NotFound from "./pages/NotFound";
+import CustomerDiscounts from "./pages/CustomerDiscounts";
+import Customers from "./pages/Customers";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,10 @@ const App = () => (
           <Route path="/admin" element={<AdminPricing />} />
           <Route path="/admin/pricing" element={<AdminPricing />} />
           <Route path="/admin/analytics" element={<ReportsDashboard />} />
+
+          <Route path="/discount" element={<CustomerDiscounts />} />
+          <Route path="/customers" element={<Customers />} />
+          
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
