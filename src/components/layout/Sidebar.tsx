@@ -58,7 +58,7 @@ export default function Sidebar({ userRole = 'sales' }: SidebarProps) {
       : salesNavItems;
 
   const roleLabels = {
-    sales: 'Sales Portal',
+    sales: 'Admin Portal',
     client: 'Client Portal',
     admin: 'Admin Panel',
   };
